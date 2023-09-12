@@ -1,22 +1,24 @@
-import threading
-import socket
-from User import *
+from ChatServer import *
+from TurnToDB import *
+from Message import *
+import datetime
 
 
 class HandleClients:
-    CLIENTS = []
+    FAILED_USER_MESSAGE = "Failed to receive data from user"
 
-    def client_connection(self, server_socket):
-        client_socket, client_address = server_socket.accept()
-        client_details = client_socket.recv(1024).decode()
-        client_details = client_details.split()
-        new_client = User(client_details[0], client_details[1], client_socket)
-        self.CLIENTS.append(new_client)
+    def receiving_messages(self, client, chat_server):
+        while True:
+            try:
+                message = ChatServer.receive_message(chat_server, client.client_socket)
+                client_message = Message(message, client.username, str(datetime.datetime.now()))
+                TurnToDB.add_new_message(client_message)  # check this
+                self.update_all_users(message, client, chat_server)
+            except:
+                print(self.FAILED_USER_MESSAGE + client.username)
+                chat_server.clients.remove(client)
 
-    def update_all_users(self, msg: str):
-        for client in self.CLIENTS:
-            client.client_socket.send(str(len(msg)).encode())
-            client.client_socket.send(msg.encode())
-
-    def receiving_messages(self):
-        pass
+    def update_all_users(self, msg: str, sender, chat_server):
+        for client in chat_server.clients:
+            if client != sender:
+                ChatServer.send_message(chat_server, client.client_socket, sender.username, msg)
