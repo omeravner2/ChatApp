@@ -1,33 +1,37 @@
 import sqlite3
-
+from ServerVariables import *
 
 class TurnToDB:
-    USERS_DB_NAME = "UserDB.db"
-    CREDENTIALS_ERROR = "The username or password are incorrect"
-    LOGIN_SUCCESSFUL = "login success"
-    MESSAGES_FILE = "ServerMessages.txt"
 
-    def create_db(self):
-        db_cursor = self.connect_to_db(self.USERS_DB_NAME)
+    @staticmethod
+    def create_db():
+        db_cursor = TurnToDB.connect_to_db(ServerVariables.USERS_DB_NAME.value)
         db_cursor.execute("CREATE TABLE IF NOT EXISTS users (Username TEXT, Password TEXT)")
 
-    def authenticate_user(self, client):
-        db_cursor = self.connect_to_db(self.USERS_DB_NAME)
+    @staticmethod
+    def authenticate_user(client):
+        db_cursor = TurnToDB.connect_to_db(ServerVariables.USERS_DB_NAME.value)
         db_cursor.execute("SELECT Password From users WHERE Username = ?", client.username)
         stored_password = db_cursor.fetchall()
         if not stored_password:
-            return self.CREDENTIALS_ERROR
-        elif self.compare_passwords(stored_password, client.username):
-            return self.LOGIN_SUCCESSFUL
+            return ServerVariables.CREDENTIALS_ERROR.value
+        elif TurnToDB.compare_passwords(stored_password, client.username):
+            return True
         else:
-            return self.CREDENTIALS_ERROR
+            return False
 
-    def add_new_user(self, client):
-        db_cursor = self.connect_to_db(self.USERS_DB_NAME)
-        db_cursor.execute("INSERT INTO users (Username, Password) VALUES(?,?)", (client.username, client.password))
+    @staticmethod
+    def add_new_user(client):
+        try:
+            db_cursor = TurnToDB.connect_to_db(ServerVariables.USERS_DB_NAME.value)
+            db_cursor.execute("INSERT INTO users (Username, Password) VALUES(?,?)", (client.username, client.password))
+            return True
+        except:
+            return False
 
-    def add_new_message(self, message):
-        file = open(self.MESSAGES_FILE)
+    @staticmethod
+    def add_new_message(message):
+        file = open(ServerVariables.MESSAGES_FILE.value)
         file.write(f'{message.date} : {message.username} > {message.data}')
         file.close()
 

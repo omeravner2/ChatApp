@@ -1,3 +1,4 @@
+import datetime
 import shutil
 from ClientVariables import *
 
@@ -40,8 +41,8 @@ class HandleTerminal:
         return username, password
 
     @staticmethod
-    def print_new_msg(username: str, date: str, msg: str):
-        print(f'{date} : {username} > {msg}')
+    def print_new_msg(username: str, msg: str):
+        print(f'{datetime.datetime.now()} : {username} > {msg}')
 
     @staticmethod
     def print_admin_msg(msg):

@@ -20,7 +20,7 @@ class ClientManager:
     def receiving_chat_messages(self, client_turn_to_server, client_handling_terminal):
         while True:
             client_username, message = client_turn_to_server.client_receive_message(client_turn_to_server.chat_socket)
-            client_handling_terminal.print_new_message(client_username, message, datetime.datetime.now())
+            client_handling_terminal.print_new_message(client_username, message)
 
     def sending_chat_messages(self, client_turn_to_server, client_handling_terminal, username):
         client_message, action = client_handling_terminal.get_message_from_terminal()
