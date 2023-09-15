@@ -15,11 +15,10 @@ class ClientVariables(Enum):
     SIGNUP_ERROR_MSG_PASSWORDS_DONT_MATCH = "Passwords don't much, renter the password one more time"
     START_ERROR = "No valid input, make sure you've entered 1 or 2."
     CONNECTED_SUCCESSFUL = "Entering chat..."
-    SIGNUP_SUCCESSFUL = "Great! you've signed up successfully, enjoy chat..."
     CONNECTION_ERROR = "Something Failed. try closing the app and re-ran it"
-    ADD_MESSAGE = 'ADD_MESSAGE'
-    REGISTER_USER = 'REGISTER_USER'
-    LOGIN_USER = 'LOGIN_USER'
+    ADD_MESSAGE = '/ADD_MESSAGE'
+    REGISTER_USER = '/REGISTER_USER'
+    LOGIN_USER = '/LOGIN_USER'
 
 
 

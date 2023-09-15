@@ -5,16 +5,17 @@ from ClientVariables import *
 
 class HandleTerminal:
 
-    def start_app_terminal(self):
+    @staticmethod
+    def start_app_terminal():
         action = input(ClientVariables.FIRST_MSG.value)
-        while action != 1 or action != 2:
+        while action != "1" and action != "2":
             print(ClientVariables.START_ERROR.value)
             action = input(ClientVariables.FIRST_MSG.value)
-        if action == 1:
-            username, password = self.get_login_credentials()
+        if action == "1":
+            username, password = HandleTerminal.get_login_credentials()
             return username, password, ClientVariables.LOGIN_USER.value
         else:
-            username, password = self.get_signup_credentials()
+            username, password = HandleTerminal.get_signup_credentials()
             return username, password, ClientVariables.REGISTER_USER.value
 
     @staticmethod
@@ -52,4 +53,4 @@ class HandleTerminal:
     @staticmethod
     def get_message_from_terminal():
         message = input()
-        return message, "add_message"
+        return message, ClientVariables.ADD_MESSAGE.value

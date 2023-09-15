@@ -22,6 +22,6 @@ class TurnToServer:
     def client_receive_message(client_socket):
         client_name = client_socket.recv(16).decode()
         client_name = client_name.replace("%", "")
-        size = int.from_bytes(client_socket.revc(4), "big")
-        data = client_socket.recv(size)
+        size = int.from_bytes(client_socket.recv(4), "big")
+        data = client_socket.recv(size).decode()
         return client_name, data
