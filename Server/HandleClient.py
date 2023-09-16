@@ -8,63 +8,57 @@ from ServerVariables import *
 
 
 class HandleClients:
+    def __init__(self):
+        self.chat_server = ChatServer()
+        self.server_turn_to_db = TurnToDB()
 
-    @staticmethod
-    def login(server_turn_to_db, client):
-        connection_flag = server_turn_to_db.authenticate_user(client)
+    def login(self, client):
+        connection_flag = self.server_turn_to_db.authenticate_user(client)
         return connection_flag
 
-    @staticmethod
-    def signup(server_turn_to_db, client):
-        sign_up_flag = server_turn_to_db.add_new_user(client)
+    def signup(self, client):
+        sign_up_flag = self.server_turn_to_db.add_new_user(client)
         return sign_up_flag
 
-    @staticmethod
-    def start_user_connection(chat_server, server_turn_to_db):
+    def start_user_connection(self):
         client_request_flag = False
-        client_socket, client_address = chat_server.server_socket.accept()
+        client_socket, client_address = self.chat_server.server_socket.accept()
         username, password, action = HandleClients.receive_message(client_socket)
         client = ChatClient(username, password, client_socket)
         message = ServerVariables.INVALID_ACTION.value
         if action == ServerVariables.LOGIN_USER.value:
-            client_request_flag, message = HandleClients.login(server_turn_to_db, client)
+            client_request_flag, message = self.login(client)
         elif action == ServerVariables.REGISTER_USER.value:
-            client_request_flag, message = HandleClients.signup(server_turn_to_db, client)
+            client_request_flag, message = self.signup(client)
         if client_request_flag:
-            chat_server.clients.append(client)
+            self.chat_server.clients.append(client)
         admin_name = "Admin%%%%%%%%%%%"
-        HandleClients.send_message(client_socket, admin_name, message)
+        HandleClients.send_message(client.user_socket, admin_name, message)
         return client
 
-    @staticmethod
-    def receiving_messages(client, chat_server):  # needs to go over!!!!
+    def receiving_messages(self, client):  # needs to go over!!!!
         while True:
             try:
-                username, message, action = HandleClients.receive_message(client.user_socket)
+                username, message, action = self.receive_message(client.user_socket)
                 if action == ServerVariables.ADD_MESSAGE.value:
-                    print("HERE")
                     client_message = Message(message, client.username, str(datetime.datetime.now()))
-                    TurnToDB.add_new_message(client_message)  # check this
-                    HandleClients.update_all_users(message, client, chat_server)
+                    self.server_turn_to_db.add_new_message(client_message)  # check this
+                    self.update_all_users(message, client)
             except:
-                chat_server.clients.remove(client)
+                self.chat_server.clients.remove(client)
                 admin_name = "Admin%%%%%%%%%%%"
                 HandleClients.send_message(client.user_socket, admin_name, ServerVariables.GENERAL_ERROR.value)
 
-    @staticmethod
-    def update_all_users(msg: str, sender, chat_server):
-        for client in chat_server.clients:
+    def update_all_users(self, msg: str, sender):
+        for client in self.chat_server.clients:
             # if client != sender:
             HandleClients.send_message(client.user_socket, sender.username, msg)
 
-    @staticmethod
-    def run():
-        chat_server = ChatServer()
-        server_turn_to_db = TurnToDB()
-        server_turn_to_db.create_db()
+    def run(self):
+        self.server_turn_to_db.create_table()
         while True:
-            client = HandleClients.start_user_connection(chat_server, server_turn_to_db)
-            client_handler = threading.Thread(target=HandleClients.receiving_messages, args=(client, chat_server))
+            client = self.start_user_connection()
+            client_handler = threading.Thread(target=self.receiving_messages, args=[client])
             client_handler.start()
 
     @staticmethod
@@ -79,8 +73,10 @@ class HandleClients:
 
     @staticmethod
     def send_message(client_socket, sender_username, msg_data):
+        sender_username += "%" * (16 - len(sender_username))
         client_socket.send(sender_username.encode() + int(len(msg_data)).to_bytes(4, "big") + msg_data.encode())
 
 
 if __name__ == "__main__":
-    HandleClients.run()
+    handling_clients = HandleClients()
+    handling_clients.run()

@@ -4,43 +4,46 @@ from ServerVariables import *
 
 class TurnToDB:
 
-    @staticmethod
-    def create_db():
-        db_cursor = TurnToDB.connect_to_db(ServerVariables.USERS_DB_NAME.value)
-        db_cursor.execute("CREATE TABLE IF NOT EXISTS users (Username TEXT, Password TEXT)")
+    def __init__(self):
+        self.db_connection = self.connect_to_db(ServerVariables.USERS_DB_NAME.value)
 
-    @staticmethod
-    def authenticate_user(client):
-        if TurnToDB.check_if_user_exist(client):
+    def create_table(self):
+        db_cursor = self.db_connection.cursor()
+        db_cursor.execute("CREATE TABLE IF NOT EXISTS users (Username TEXT, Password TEXT)")
+        self.db_connection.commit()
+
+    def authenticate_user(self, client):
+        if self.check_if_user_exist(client):
             try:
-                db_cursor = TurnToDB.connect_to_db(ServerVariables.USERS_DB_NAME.value)
-                db_cursor.execute("SELECT Password From users WHERE Username = ?", client.username)
-                stored_password = db_cursor.fetchall()
-                if TurnToDB.compare_passwords(stored_password, client.username):
+                db_cursor = self.db_connection.cursor()
+                db_cursor.execute("SELECT Password From users WHERE Username = ?", [client.username])
+                stored_password = db_cursor.fetchall()[0][0]
+                print(stored_password, client.password)
+                if TurnToDB.compare_passwords(stored_password, client.password):
                     return True, ServerVariables.LOGIN_SUCCESSFUL.value
                 else:
                     return False, ServerVariables.CREDENTIALS_ERROR.value
             except:
                 return False, ServerVariables.GENERAL_ERROR.value
 
-    @staticmethod
-    def add_new_user(client):
-        if TurnToDB.check_if_user_exist(client):
+    def add_new_user(self, client):
+        if self.check_if_user_exist(client):
             return False, ServerVariables.TAKEN_USERNAME.value
         else:
             try:
-                db_cursor = TurnToDB.connect_to_db(ServerVariables.USERS_DB_NAME.value)
-                db_cursor.execute("INSERT INTO users (Username, Password) VALUES(?,?)", (client.username,
-                                                                                         client.password))
+                db_cursor = self.db_connection.cursor()
+                db_cursor.execute("INSERT INTO users (Username, Password) VALUES(?,?)", [client.username,
+                                                                                         client.password])
+                self.db_connection.commit()
+
                 return True, ServerVariables.SIGNUP_SUCCESS.value
             except:
                 return False, ServerVariables.GENERAL_ERROR.value
 
     @staticmethod
     def add_new_message(message):
-        file = open(ServerVariables.MESSAGES_FILE.value, "w+")
-        file.write(f'{message.date} : {message.username} > {message.data}')
-        file.close()
+        with open(ServerVariables.MESSAGES_FILE.value, "a") as file:
+            file.write(f"{message.date} : {message.username} > {message.data}" + '\n')
 
     @staticmethod
     def compare_passwords(stored_password, entered_password):
@@ -49,14 +52,16 @@ class TurnToDB:
         return False
 
     @staticmethod
-    def connect_to_db(db_name):
-        db_connection = sqlite3.connect(db_name)
-        db_pointer = db_connection.cursor()
-        return db_pointer
+    def get_all_messages():
+        return open(ServerVariables.MESSAGES_FILE.value).readlines()
 
     @staticmethod
-    def check_if_user_exist(client):
-        db_cursor = TurnToDB.connect_to_db(ServerVariables.USERS_DB_NAME.value)
+    def connect_to_db(db_name):
+        db_connection = sqlite3.connect(db_name)
+        return db_connection
+
+    def check_if_user_exist(self, client):
+        db_cursor = self.db_connection.cursor()
         query = "SELECT * FROM users WHERE Username = ?"
         print("client name:" + client.username)
         db_cursor.execute(query, [client.username])

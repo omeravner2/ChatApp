@@ -2,7 +2,7 @@ import socket
 
 
 class ChatServer:
-    IP = "127.0.0.1"
+    IP = "0.0.0.0"
     PORT = 1231
 
     def __init__(self):

@@ -12,10 +12,9 @@ class ClientManager:
 
     def starting_the_client_connections(self):
         username, password, action = self.handling_terminal.start_app_terminal()
-        self.client_turn_to_server.client_send_message(password, username, self.client_turn_to_server.chat_socket,
+        self.client_turn_to_server.client_send_message(password, username,
                                                        action)
-        client_username, status = self.client_turn_to_server.client_receive_message(
-            self.client_turn_to_server.chat_socket)
+        client_username, status = self.client_turn_to_server.client_receive_message()
         print(client_username, status)
         if client_username == 'Admin':
             HandleTerminal.print_admin_msg(status)
@@ -23,26 +22,22 @@ class ClientManager:
             HandleTerminal.print_admin_msg(ClientVariables.CONNECTION_ERROR.value)
         return username
 
-    @staticmethod
-    def receiving_chat_messages(client_turn_to_server, client_handling_terminal):
+    def receiving_chat_messages(self):
         while True:
-            client_username, message = client_turn_to_server.client_receive_message(client_turn_to_server.chat_socket)
-            client_handling_terminal.print_new_msg(client_username, message)
+            client_username, message = self.client_turn_to_server.client_receive_message()
+            self.handling_terminal.print_new_msg(client_username, message)
 
-    @staticmethod
-    def sending_chat_messages(client_turn_to_server, client_handling_terminal, username):
+    def sending_chat_messages(self, username):
         while True:
-            client_message, action = client_handling_terminal.get_message_from_terminal()
-            client_turn_to_server.client_send_message(client_message, username, client_turn_to_server.chat_socket,
-                                                      action)
+            client_message, action = self.handling_terminal.get_message_from_terminal()
+            self.client_turn_to_server.client_send_message(client_message, username
+                                                           , action)
 
     def client_run(self):
         client_username = self.starting_the_client_connections()
         send_messages_thread = threading.Thread(target=self.sending_chat_messages,
-                                                args=(self.client_turn_to_server, self.handling_terminal,
-                                                      client_username))
-        receive_messages_thread = threading.Thread(target=self.receiving_chat_messages, args=(self.client_turn_to_server
-                                                                                              , self.handling_terminal))
+                                                args=[client_username])
+        receive_messages_thread = threading.Thread(target=self.receiving_chat_messages)
         send_messages_thread.start()
         receive_messages_thread.start()
 
