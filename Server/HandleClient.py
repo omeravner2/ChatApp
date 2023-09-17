@@ -32,8 +32,8 @@ class HandleClients:
             client_request_flag, message = self.signup(client)
         if client_request_flag:
             self.chat_server.clients.append(client)
-        admin_name = "Admin%%%%%%%%%%%"
-        HandleClients.send_message(client.user_socket, admin_name,
+            client.password = True
+        HandleClients.send_message(client.user_socket, ServerVariables.ADMIN_NAME.value,
                                    datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),  message)
         return client
 
@@ -42,7 +42,7 @@ class HandleClients:
         for message in messages_history:
             HandleClients.send_message(client_socket, message.username, message.date, message.data)
 
-    def receiving_messages(self, client):  # needs to go over!!!!
+    def receiving_messages(self, client):
         while True:
             try:
                 username, message_date, message, action = self.receive_message(client.user_socket)
@@ -52,8 +52,8 @@ class HandleClients:
                     self.update_all_users(message, message_date, client)
             except:
                 self.chat_server.clients.remove(client)
-                admin_name = "Admin%%%%%%%%%%%"
-                HandleClients.send_message(client.user_socket, admin_name,
+
+                HandleClients.send_message(client.user_socket, ServerVariables.ADMIN_NAME.value,
                                            datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
                                            ServerVariables.GENERAL_ERROR.value)
 
@@ -90,6 +90,5 @@ class HandleClients:
 
 
 if __name__ == "__main__":
-    print(type(datetime.datetime.now().strftime("%d/%m/%Y %H:%M")))
     handling_clients = HandleClients()
     handling_clients.run()

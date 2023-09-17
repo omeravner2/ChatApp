@@ -15,8 +15,8 @@ class ClientManager:
         self.client_turn_to_server.client_send_message(password, username,
                                                        action)
         client_username, message_date, status = self.client_turn_to_server.client_receive_message()
-        print(client_username, status)
-        if client_username == 'Admin':
+        # add while status if False - get the credentials again and try it again
+        if client_username == ClientVariables.ADMIN_NAME.value:
             HandleTerminal.print_admin_msg(status)
         else:
             HandleTerminal.print_admin_msg(ClientVariables.CONNECTION_ERROR.value)

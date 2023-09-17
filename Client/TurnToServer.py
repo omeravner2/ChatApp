@@ -5,8 +5,6 @@ import socket
 class TurnToServer:
     IP = "127.0.0.1"
     PORT = 1231
-    SUCCESSFUL_LOGIN = "LOGIN SUCCESSFUL"
-    NOT_SUCCESSFUL_LOGIN = "LOGIN FAILED"
 
     def __init__(self):
         self.chat_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

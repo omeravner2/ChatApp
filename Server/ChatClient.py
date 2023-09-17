@@ -4,4 +4,5 @@ class ChatClient:
         self.username = username
         self.password = password
         self.user_socket = user_socket
+        self.connected = False
 
