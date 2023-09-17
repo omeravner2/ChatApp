@@ -37,8 +37,10 @@ class HandleClients:
                                    datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),  message)
         return client
 
-    def update_history(self):
-        history = self.server_turn_to_db.get_all_messages()
+    def update_history(self, client_socket):
+        messages_history = self.server_turn_to_db.get_all_messages()
+        for message in messages_history:
+            HandleClients.send_message(client_socket, message.username, message.date, message.data)
 
     def receiving_messages(self, client):  # needs to go over!!!!
         while True:
@@ -64,6 +66,7 @@ class HandleClients:
         self.server_turn_to_db.create_table()
         while True:
             client = self.start_user_connection()
+            self.update_history(client.user_socket)
             client_handler = threading.Thread(target=self.receiving_messages, args=[client])
             client_handler.start()
 

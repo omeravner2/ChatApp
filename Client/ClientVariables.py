@@ -2,11 +2,11 @@ from enum import Enum
 
 
 class ClientVariables(Enum):
-    FIRST_MSG = "Hi peps! Welcome to the most amazing chat app ever :)\n Please enter 1 for login and 2 for sign up"
-    LOGIN_MSG_USERNAME = "Please enter username"
-    LOGIN_MSG_PASSWORD = "Please enter password"
-    LOGIN_ERROR_MSG_USERNAME = "Please re-enter a username"
-    LOGIN_ERROR_MSG_PASSWORD = "Please re-enter the password"
+    FIRST_MSG = "Hi peps! Welcome to the most amazing chat app ever :)\n Please enter 1 for login and 2 for sign up "
+    LOGIN_MSG_USERNAME = "Please enter username: "
+    LOGIN_MSG_PASSWORD = "Please enter password: "
+    LOGIN_ERROR_MSG_USERNAME = "Please re-enter a username "
+    LOGIN_ERROR_MSG_PASSWORD = "Please re-enter the password "
     SIGNUP_MSG_USERNAME = "Please enter the username you want to have :)"
     SIGNUP_MSG_PASSWORD = "Enter the password you would like to user"
     SIGNUP_MSG_PASSWORD_RE_ENTER = "Now, please enter the password again"

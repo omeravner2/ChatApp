@@ -55,10 +55,12 @@ class TurnToDB:
     @staticmethod
     def get_all_messages():
         messages_list = open(ServerVariables.MESSAGES_FILE.value).readlines()
+        print(messages_list)
         list_of_messages = []
         for i in range(len(messages_list)):
             line_info = messages_list[i].split('|||')
-            client_message = Message(line_info[2], line_info[1], line_info[3])
+            print(line_info)
+            client_message = Message(line_info[2].replace("\n", ""), line_info[1], line_info[0])
             list_of_messages.append(client_message)
         return list_of_messages
 
