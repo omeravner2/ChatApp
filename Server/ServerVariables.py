@@ -14,6 +14,7 @@ class ServerVariables(Enum):
     SIGNUP_SUCCESS = "Sign up successfully! Enjoy!"
     MESSAGES_FILE = "ServerMessages.txt"
     INVALID_ACTION = "invalid action was requested"
+    ADMIN_NAME = "Admin%%%%%%%%%%%"
 
 
 

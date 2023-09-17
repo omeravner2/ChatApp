@@ -42,8 +42,8 @@ class HandleTerminal:
         return username, password
 
     @staticmethod
-    def print_new_msg(username: str, msg: str):
-        print(f'{datetime.datetime.now()} : {username} > {msg}')
+    def print_new_msg(username: str, msg_date: str, msg: str):
+        print(f'{msg_date} : {username} > {msg}')
 
     @staticmethod
     def print_admin_msg(msg):

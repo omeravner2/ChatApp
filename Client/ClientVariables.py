@@ -19,6 +19,7 @@ class ClientVariables(Enum):
     ADD_MESSAGE = '/ADD_MESSAGE'
     REGISTER_USER = '/REGISTER_USER'
     LOGIN_USER = '/LOGIN_USER'
+    ADMIN_NAME = "Admin%%%%%%%%%%%"
 
 
 

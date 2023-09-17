@@ -1,5 +1,6 @@
 import sqlite3
 from ServerVariables import *
+from Message import *
 
 
 class TurnToDB:
@@ -43,7 +44,7 @@ class TurnToDB:
     @staticmethod
     def add_new_message(message):
         with open(ServerVariables.MESSAGES_FILE.value, "a") as file:
-            file.write(f"{message.date} : {message.username} > {message.data}" + '\n')
+            file.write(f"{message.date}|||{message.username}|||{message.data}" + '\n')
 
     @staticmethod
     def compare_passwords(stored_password, entered_password):
@@ -53,7 +54,13 @@ class TurnToDB:
 
     @staticmethod
     def get_all_messages():
-        return open(ServerVariables.MESSAGES_FILE.value).readlines()
+        messages_list = open(ServerVariables.MESSAGES_FILE.value).readlines()
+        list_of_messages = []
+        for i in range(len(messages_list)):
+            line_info = messages_list[i].split('|||')
+            client_message = Message(line_info[2], line_info[1], line_info[3])
+            list_of_messages.append(client_message)
+        return list_of_messages
 
     @staticmethod
     def connect_to_db(db_name):

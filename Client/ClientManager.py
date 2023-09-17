@@ -14,7 +14,7 @@ class ClientManager:
         username, password, action = self.handling_terminal.start_app_terminal()
         self.client_turn_to_server.client_send_message(password, username,
                                                        action)
-        client_username, status = self.client_turn_to_server.client_receive_message()
+        client_username, message_date, status = self.client_turn_to_server.client_receive_message()
         print(client_username, status)
         if client_username == 'Admin':
             HandleTerminal.print_admin_msg(status)
@@ -24,8 +24,8 @@ class ClientManager:
 
     def receiving_chat_messages(self):
         while True:
-            client_username, message = self.client_turn_to_server.client_receive_message()
-            self.handling_terminal.print_new_msg(client_username, message)
+            client_username, message_date, message = self.client_turn_to_server.client_receive_message()
+            self.handling_terminal.print_new_msg(client_username, message_date, message)
 
     def sending_chat_messages(self, username):
         while True:
