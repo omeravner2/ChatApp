@@ -26,7 +26,8 @@ class HandleClients:
     def start_user_connection(self):
         client_request_flag = False
         client_socket, client_address = self.chat_server.server_socket.accept()
-        private_key, public_key = Encryption.create_rsa_keys()
+        client_public_key = self.get_client_public_key(client_socket)
+        shared_key = Encryption.generate_aes_key()
         client = ChatClient('', '', client_socket, shared_key)
         while not client_request_flag:
             username, message_date, password, action = HandleClients.receive_message(client_socket)
@@ -94,13 +95,11 @@ class HandleClients:
                            msg_date.encode() + msg_data.encode())
 
     @staticmethod
-    def key_exchange_with_client(client_socket, public_key):
-        # key = Encryption.serialize_key(public_key)
-        public_key = public_key.to_bytes(256, "big")
-        print(public_key)
-        # size = int(len(public_key)).to_bytes(4, "big")
-        client_socket.send(public_key)
-        # size = int.from_bytes(client_socket.recv(4), "big")
-        client_public_key = int.from_bytes(client_socket.recv(256), "big")
-        # client_public_key = Encryption.deserialize_key(client_socket.recv(size))
-        return client_public_key
+    def get_client_public_key(client_socket):
+        size = int.from_bytes(client_socket.recv(4), "big")
+        public_key = client_socket.recv(size).decode()
+        return public_key
+
+    @staticmethod
+    def send_shared_aes_key(client_socket):
+        pass
