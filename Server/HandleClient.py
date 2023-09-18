@@ -13,28 +13,30 @@ class HandleClients:
         self.server_turn_to_db = TurnToDB()
 
     def login(self, client):
-        connection_flag = self.server_turn_to_db.authenticate_user(client)
-        return connection_flag
+        connection_flag, message = self.server_turn_to_db.authenticate_user(client)
+        return connection_flag, message
 
     def signup(self, client):
-        sign_up_flag = self.server_turn_to_db.add_new_user(client)
-        return sign_up_flag
+        sign_up_flag, message = self.server_turn_to_db.add_new_user(client)
+        return sign_up_flag, message
 
     def start_user_connection(self):
         client_request_flag = False
         client_socket, client_address = self.chat_server.server_socket.accept()
-        username, message_date, password,  action = HandleClients.receive_message(client_socket)
-        client = ChatClient(username, password, client_socket)
-        message = ServerVariables.INVALID_ACTION.value
-        if action == ServerVariables.LOGIN_USER.value:
-            client_request_flag, message = self.login(client)
-        elif action == ServerVariables.REGISTER_USER.value:
-            client_request_flag, message = self.signup(client)
-        if client_request_flag:
-            self.chat_server.clients.append(client)
-            client.password = True
-        HandleClients.send_message(client.user_socket, ServerVariables.ADMIN_NAME.value,
-                                   datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),  message)
+        client = ChatClient('', '', client_socket)
+        while not client_request_flag:
+            username, message_date, password, action = HandleClients.receive_message(client_socket)
+            client = ChatClient(username, password, client_socket)
+            message = ServerVariables.INVALID_ACTION.value
+            if action == ServerVariables.LOGIN_USER.value:
+                client_request_flag, message = self.login(client)
+            elif action == ServerVariables.REGISTER_USER.value:
+                client_request_flag, message = self.signup(client)
+            if client_request_flag:
+                self.chat_server.clients.append(client)
+
+            HandleClients.send_message(client.user_socket, ServerVariables.ADMIN_NAME.value,
+                                       datetime.datetime.now().strftime(ServerVariables.DATE_FORMAT.value),  message)
         return client
 
     def update_history(self, client_socket):
@@ -54,7 +56,7 @@ class HandleClients:
                 self.chat_server.clients.remove(client)
 
                 HandleClients.send_message(client.user_socket, ServerVariables.ADMIN_NAME.value,
-                                           datetime.datetime.now().strftime("%d/%m/%Y %H:%M"),
+                                           datetime.datetime.now().strftime(ServerVariables.DATE_FORMAT.value),
                                            ServerVariables.GENERAL_ERROR.value)
 
     def update_all_users(self, msg: str, msg_date: str, sender):
@@ -84,11 +86,6 @@ class HandleClients:
     @staticmethod
     def send_message(client_socket, sender_username, msg_date, msg_data):
         sender_username += "%" * (16 - len(sender_username))
-        print(msg_data, msg_date)
         client_socket.send(sender_username.encode() + int(len(msg_data)).to_bytes(4, "big") +
                            msg_date.encode() + msg_data.encode())
 
-
-if __name__ == "__main__":
-    handling_clients = HandleClients()
-    handling_clients.run()

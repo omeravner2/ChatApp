@@ -6,3 +6,4 @@ class ChatClient:
         self.user_socket = user_socket
         self.connected = False
 
+

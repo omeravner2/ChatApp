@@ -5,6 +5,7 @@ class ServerVariables(Enum):
     ADD_MESSAGE = '/ADD_MESSAGE'
     REGISTER_USER = '/REGISTER_USER'
     LOGIN_USER = '/LOGIN_USER'
+    ENCRYPTION_VAR = "/DO_ENCRYPTION"
     FAILED_USER_MESSAGE = "Failed to receive data from user"
     USERS_DB_NAME = "UserDB.db"
     CREDENTIALS_ERROR = "The username or password are incorrect"
@@ -15,6 +16,7 @@ class ServerVariables(Enum):
     MESSAGES_FILE = "ServerMessages.txt"
     INVALID_ACTION = "invalid action was requested"
     ADMIN_NAME = "Admin%%%%%%%%%%%"
+    DATE_FORMAT = "%d/%m/%Y %H:%M"
 
 
 

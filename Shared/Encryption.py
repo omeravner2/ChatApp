@@ -9,19 +9,19 @@ class Encryption:
     @staticmethod
     def create_rsa_keys():
         key = RSA.generate(2048)
-        public_key = key.public_key()
-        public_key = public_key.export_key('PEM')
-        return key, public_key
+        private_key = key.export_key()
+        public_key = key.public_key().export_key()
+        return private_key, public_key
 
     @staticmethod
-    def rsa_encrypt(public_key, data):
-        cipher = PKCS1_OAEP.new(public_key)
-        cipher_text = cipher.encrypt(data)
+    def rsa_encrypt(recipient_public_key, data):
+        cipher = PKCS1_OAEP.new(RSA.importKey(recipient_public_key))
+        cipher_text = cipher.encrypt(data.encode())
         return cipher_text
 
     @staticmethod
     def rsa_decrypt(private_key, data):
-        cipher = PKCS1_OAEP.new(private_key)
+        cipher = PKCS1_OAEP.new(RSA.importKey(private_key))
         clear_text = cipher.decrypt(data)
         return clear_text
 
@@ -39,6 +39,6 @@ class Encryption:
         return plain_text
 
     @staticmethod
-    def generate_rsa_key():
+    def generate_aes_key():
         return get_random_bytes(16)  # 128 bits
 

@@ -25,3 +25,5 @@ class TurnToServer:
         msg_date = self.chat_socket.recv(16).decode()
         data = self.chat_socket.recv(size).decode()
         return client_name, msg_date, data
+
+

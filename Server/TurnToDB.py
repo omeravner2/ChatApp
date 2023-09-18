@@ -7,6 +7,7 @@ class TurnToDB:
 
     def __init__(self):
         self.db_connection = self.connect_to_db(ServerVariables.USERS_DB_NAME.value)
+        self.create_messages_file()
 
     def create_table(self):
         db_cursor = self.db_connection.cursor()
@@ -19,13 +20,13 @@ class TurnToDB:
                 db_cursor = self.db_connection.cursor()
                 db_cursor.execute("SELECT Password From users WHERE Username = ?", [client.username])
                 stored_password = db_cursor.fetchall()[0][0]
-                print(stored_password, client.password)
                 if TurnToDB.compare_passwords(stored_password, client.password):
                     return True, ServerVariables.LOGIN_SUCCESSFUL.value
                 else:
                     return False, ServerVariables.CREDENTIALS_ERROR.value
             except:
-                return False, ServerVariables.GENERAL_ERROR.value
+                pass
+        return False, ServerVariables.CREDENTIALS_ERROR.value
 
     def add_new_user(self, client):
         if self.check_if_user_exist(client):
@@ -42,6 +43,11 @@ class TurnToDB:
                 return False, ServerVariables.GENERAL_ERROR.value
 
     @staticmethod
+    def create_messages_file():
+        file = open(ServerVariables.MESSAGES_FILE.value, "a")
+        file.close()
+
+    @staticmethod
     def add_new_message(message):
         with open(ServerVariables.MESSAGES_FILE.value, "a") as file:
             file.write(f"{message.date}|||{message.username}|||{message.data}" + '\n')
@@ -55,11 +61,9 @@ class TurnToDB:
     @staticmethod
     def get_all_messages():
         messages_list = open(ServerVariables.MESSAGES_FILE.value).readlines()
-        print(messages_list)
         list_of_messages = []
         for i in range(len(messages_list)):
             line_info = messages_list[i].split('|||')
-            print(line_info)
             client_message = Message(line_info[2].replace("\n", ""), line_info[1], line_info[0])
             list_of_messages.append(client_message)
         return list_of_messages
@@ -72,7 +76,6 @@ class TurnToDB:
     def check_if_user_exist(self, client):
         db_cursor = self.db_connection.cursor()
         query = "SELECT * FROM users WHERE Username = ?"
-        print("client name:" + client.username)
         db_cursor.execute(query, [client.username])
         if len(db_cursor.fetchall()) > 0:
             return True
