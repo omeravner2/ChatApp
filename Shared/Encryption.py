@@ -18,8 +18,8 @@ class Encryption:
         return private_key, public_key
 
     @staticmethod
-    def rsa_encrypt(recipient_public_key, data):
-        cipher = PKCS1_OAEP.new(RSA.importKey(recipient_public_key))
+    def rsa_encrypt(key, data):
+        cipher = PKCS1_OAEP.new(RSA.importKey(key))
         cipher_text = cipher.encrypt(data.encode())
         return cipher_text
 

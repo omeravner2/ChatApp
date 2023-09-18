@@ -26,15 +26,7 @@ class HandleClients:
     def start_user_connection(self):
         client_request_flag = False
         client_socket, client_address = self.chat_server.server_socket.accept()
-        private_key, public_key = Encryption.generate_diffie_hellman_keys()
-        print("something")
-        client_public_key = self.key_exchange_with_client(client_socket, public_key)
-        print(client_public_key)
-        # shared_key = private_key.exchange(client_public_key)
-        shared_key = private_key.gen_shared_key(client_public_key)
-        shared_key = create_256_key(shared_key.encode())
-        print("shared key: ")
-        print(shared_key.hexdigest())
+        private_key, public_key = Encryption.create_rsa_keys()
         client = ChatClient('', '', client_socket, shared_key)
         while not client_request_flag:
             username, message_date, password, action = HandleClients.receive_message(client_socket)

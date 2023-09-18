@@ -1,6 +1,7 @@
 import sqlite3
 from ServerVariables import *
 from Message import *
+from Shared.Hashing import *
 
 
 class TurnToDB:
@@ -20,7 +21,7 @@ class TurnToDB:
                 db_cursor = self.db_connection.cursor()
                 db_cursor.execute("SELECT Password From users WHERE Username = ?", [client.username])
                 stored_password = db_cursor.fetchall()[0][0]
-                if TurnToDB.compare_passwords(stored_password, client.password):
+                if compare_hashes(stored_password, client.password):
                     return True, ServerVariables.LOGIN_SUCCESSFUL.value
                 else:
                     return False, ServerVariables.CREDENTIALS_ERROR.value
@@ -35,7 +36,7 @@ class TurnToDB:
             try:
                 db_cursor = self.db_connection.cursor()
                 db_cursor.execute("INSERT INTO users (Username, Password) VALUES(?,?)", [client.username,
-                                                                                         client.password])
+                                                                                         hash_password(client.password)])
                 self.db_connection.commit()
 
                 return True, ServerVariables.SIGNUP_SUCCESS.value
@@ -52,11 +53,6 @@ class TurnToDB:
         with open(ServerVariables.MESSAGES_FILE.value, "a") as file:
             file.write(f"{message.date}|||{message.username}|||{message.data}" + '\n')
 
-    @staticmethod
-    def compare_passwords(stored_password, entered_password):
-        if stored_password == entered_password:
-            return True
-        return False
 
     @staticmethod
     def get_all_messages():
