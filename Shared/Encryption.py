@@ -2,6 +2,8 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP, AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
+from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.primitives import serialization
 
 
 class Encryption:
@@ -42,3 +44,23 @@ class Encryption:
     def generate_aes_key():
         return get_random_bytes(16)  # 128 bits
 
+    @staticmethod
+    def generate_diffie_hellman_keys():
+        parameters = dh.generate_parameters(generator=2, key_size=1024)
+        print("parameters")
+        private_key = parameters.generate_private_key()
+        public_key = private_key.public_key()
+        print("Generated public key is ")
+        print(public_key)
+        return private_key, public_key
+
+    @staticmethod
+    def serialize_key(public_key):
+        key_bytes = public_key.public_bytes(encoding=serialization.Encoding.PEM,
+                                            format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        return key_bytes
+
+    @staticmethod
+    def deserialize_key(public_key):
+        key = serialization.load_pem_public_key(public_key)
+        return key

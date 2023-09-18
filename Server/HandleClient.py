@@ -5,11 +5,13 @@ from TurnToDB import *
 from Message import *
 import datetime
 from ServerVariables import *
+from Shared.Encryption import *
 
 
 class HandleClients:
     def __init__(self):
-        self.chat_server = ChatServer()
+        private_key, public_key = Encryption.generate_diffie_hellman_keys()
+        self.chat_server = ChatServer(private_key, public_key)
         self.server_turn_to_db = TurnToDB()
 
     def login(self, client):
@@ -23,10 +25,12 @@ class HandleClients:
     def start_user_connection(self):
         client_request_flag = False
         client_socket, client_address = self.chat_server.server_socket.accept()
-        client = ChatClient('', '', client_socket)
+        client_public_key = self.key_exchange_with_client(client_socket)
+        shared_key = self.chat_server.private_key.exchange(client_public_key)
+        client = ChatClient('', '', client_socket, shared_key)
         while not client_request_flag:
             username, message_date, password, action = HandleClients.receive_message(client_socket)
-            client = ChatClient(username, password, client_socket)
+            client = ChatClient(username, password, client_socket, shared_key)
             message = ServerVariables.INVALID_ACTION.value
             if action == ServerVariables.LOGIN_USER.value:
                 client_request_flag, message = self.login(client)
@@ -89,3 +93,11 @@ class HandleClients:
         client_socket.send(sender_username.encode() + int(len(msg_data)).to_bytes(4, "big") +
                            msg_date.encode() + msg_data.encode())
 
+    def key_exchange_with_client(self, client_socket):
+        print(self.chat_server.public_key)
+        key = Encryption.serialize_key(self.chat_server.public_key)
+        size = int(len(key)).to_bytes(4, "big")
+        client_socket.send(size + key)
+        size = int.from_bytes(client_socket.recv(4), "big")
+        client_public_key = Encryption.deserialize_key(client_socket.recv(size))
+        return client_public_key
