@@ -1,11 +1,12 @@
+import base64
+import os
+import rsa
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP, AES
+from Crypto.Cipher import PKCS1_OAEP, AES, PKCS1_v1_5
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives import serialization
-import pyDH
 
 
 class Encryption:
@@ -18,16 +19,30 @@ class Encryption:
         return private_key, public_key
 
     @staticmethod
+    def generate_rsa_keys():
+        public_key, private_key = rsa.newkeys(512)
+        return private_key.save_pkcs1(), public_key.save_pkcs1()
+
+    @staticmethod
     def rsa_encrypt(key, data):
-        cipher = PKCS1_OAEP.new(RSA.importKey(key))
-        cipher_text = cipher.encrypt(data.encode())
-        return cipher_text
+        cipher = PKCS1_v1_5.new(RSA.importKey(key))
+        cipher_text = cipher.encrypt(data)
+        return base64.b64encode(cipher_text)
 
     @staticmethod
     def rsa_decrypt(private_key, data):
-        cipher = PKCS1_OAEP.new(RSA.importKey(private_key))
-        clear_text = cipher.decrypt(data)
+        cipher = PKCS1_v1_5.new(RSA.importKey(private_key))
+        data = base64.b64decode(data)
+        clear_text = cipher.decrypt(data, get_random_bytes(16), expected_pt_len=16)
         return clear_text
+
+    @staticmethod
+    def rsa_encryption(public_key, data):
+        return rsa.encrypt(data, public_key)
+
+    @staticmethod
+    def rsa_decryption(private_key, data):
+        return rsa.decrypt(data, private_key)
 
     @staticmethod
     def aes_encrypt(key, data):
@@ -45,19 +60,6 @@ class Encryption:
     @staticmethod
     def generate_aes_key():
         return get_random_bytes(16)  # 128 bits
-
-    """ def generate_diffie_hellman_keys():
-        parameters = dh.generate_parameters(generator=2, key_size=1024)
-        private_key = parameters.generate_private_key()
-        public_key = private_key.public_key()
-        return private_key, public_key"""
-    @staticmethod
-    def generate_diffie_hellman_keys():
-        private_key = pyDH.DiffieHellman(5)
-        public_key = private_key.gen_public_key()
-        print("public key: ")
-        print(public_key)
-        return private_key, public_key
 
     @staticmethod
     def serialize_key(public_key):

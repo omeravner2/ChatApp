@@ -17,11 +17,12 @@ class ClientVariables(Enum):
     ADD_MESSAGE = '/ADD_MESSAGE'
     REGISTER_USER = '/REGISTER_USER'
     LOGIN_USER = '/LOGIN_USER'
-    ENCRYPTION_VAR = "/DO_ENCRYPTION"
+    PUBLIC_KEY_ACTION = "/PUBLIC_KEY"
     ADMIN_NAME = "Admin"
     CREDENTIALS_ERROR = "The username or password are incorrect"
     GENERAL_ERROR = "Something went wrong... try closing the chat and connecting again"
     TAKEN_USERNAME = "The username you chose is taken, try choosing a different one"
+    DATE_FORMAT = "%d/%m/%Y %H:%M"
     ERRORS_LIST = [CREDENTIALS_ERROR, TAKEN_USERNAME]
 
 

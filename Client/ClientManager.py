@@ -15,6 +15,7 @@ class ClientManager:
         username, password, action = self.handling_terminal.start_app_terminal()
         self.client_turn_to_server.client_send_message(password, username,
                                                        action)
+        server_public_key, action = self.client_turn_to_server.get_server_public_key()
         client_username, status = self.getting_status_from_server()
         while status in ClientVariables.ERRORS_LIST.value:
             if action == ClientVariables.LOGIN_USER.value:

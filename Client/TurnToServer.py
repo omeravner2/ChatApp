@@ -1,5 +1,8 @@
 import datetime
+import pickle
+import rsa
 import socket
+from ClientVariables import *
 from Shared.Encryption import *
 from Shared.Hashing import *
 
@@ -9,19 +12,12 @@ class TurnToServer:
     PORT = 1231
 
     def __init__(self):
-        self.private_key, self.public_key = Encryption.generate_diffie_hellman_keys()
-        print('here')
         self.chat_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.chat_socket.connect((self.IP, self.PORT))
-        server_public_key = self.key_exchange_with_server()
-        # self.shared_key = self.private_key.exchange(server_public_key)
-        self.shared_key = self.private_key.gen_shared_key(server_public_key)
-        shared_key = create_256_key(self.shared_key.encode())
-        print("shared key: ")
-        print(shared_key.hexdigest())
+        self.aes_key = Encryption.generate_aes_key()
 
     def client_send_message(self, msg: str, username: str, action):
-        msg_date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+        msg_date = datetime.datetime.now().strftime(ClientVariables.DATE_FORMAT.value)
         username += "%" * (16 - len(username))
         msg_size = len(msg.encode())
         action += "%" * (16 - len(action))
@@ -36,15 +32,15 @@ class TurnToServer:
         data = self.chat_socket.recv(size).decode()
         return client_name, msg_date, data
 
-    def key_exchange_with_server(self):
-        # key = Encryption.serialize_key(self.public_key)
-        # size = int(len(key)).to_bytes(4, "big")
-        key = self.public_key.to_bytes(256, "big")
-        self.chat_socket.send(key)
-        # self.chat_socket.send(size + key)
-        # size = int.from_bytes(self.chat_socket.recv(4), "big")
-        # server_public_key = Encryption.deserialize_key(self.chat_socket.recv(size))
-        server_public_key = int.from_bytes(self.chat_socket.recv(256), "big")
-        return server_public_key
+    def get_server_public_key(self):
+        size = int.from_bytes(self.chat_socket.recv(4), "big")
+        public_key = self.chat_socket.recv(size)
+        print(public_key)
+        public_key = rsa.PublicKey.load_pkcs1(public_key)
+        action = self.chat_socket.recv(16).decode()
+        return public_key, action
 
-
+    def send_shared_key(self, public_key):
+        aes_key = Encryption.rsa_encryption(public_key, self.aes_key)
+        size = int(len(aes_key)).to_bytes(4, "big")
+        self.chat_socket.send(size + aes_key)

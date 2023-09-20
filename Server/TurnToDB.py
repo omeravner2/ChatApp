@@ -53,7 +53,6 @@ class TurnToDB:
         with open(ServerVariables.MESSAGES_FILE.value, "a") as file:
             file.write(f"{message.date}|||{message.username}|||{message.data}" + '\n')
 
-
     @staticmethod
     def get_all_messages():
         messages_list = open(ServerVariables.MESSAGES_FILE.value).readlines()

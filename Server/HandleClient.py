@@ -1,3 +1,4 @@
+import pickle
 import threading
 from ChatServer import *
 from ChatClient import *
@@ -7,7 +8,6 @@ import datetime
 from ServerVariables import *
 from Shared.Encryption import *
 from Shared.Hashing import *
-
 
 
 class HandleClients:
@@ -26,8 +26,8 @@ class HandleClients:
     def start_user_connection(self):
         client_request_flag = False
         client_socket, client_address = self.chat_server.server_socket.accept()
-        client_public_key = self.get_client_public_key(client_socket)
-        shared_key = Encryption.generate_aes_key()
+        self.send_my_public_key(client_socket)
+        shared_key = self.get_shared_key(client_socket)
         client = ChatClient('', '', client_socket, shared_key)
         while not client_request_flag:
             username, message_date, password, action = HandleClients.receive_message(client_socket)
@@ -41,7 +41,7 @@ class HandleClients:
                 self.chat_server.clients.append(client)
 
             HandleClients.send_message(client.user_socket, ServerVariables.ADMIN_NAME.value,
-                                       datetime.datetime.now().strftime(ServerVariables.DATE_FORMAT.value),  message)
+                                       datetime.datetime.now().strftime(ServerVariables.DATE_FORMAT.value), message)
         return client
 
     def update_history(self, client_socket):
@@ -55,7 +55,7 @@ class HandleClients:
                 username, message_date, message, action = self.receive_message(client.user_socket)
                 if action == ServerVariables.ADD_MESSAGE.value:
                     client_message = Message(message, client.username, message_date)
-                    self.server_turn_to_db.add_new_message(client_message)  # check this
+                    self.server_turn_to_db.add_new_message(client_message)  # TODO: check this
                     self.update_all_users(message, message_date, client)
             except:
                 self.chat_server.clients.remove(client)
@@ -94,12 +94,15 @@ class HandleClients:
         client_socket.send(sender_username.encode() + int(len(msg_data)).to_bytes(4, "big") +
                            msg_date.encode() + msg_data.encode())
 
-    @staticmethod
-    def get_client_public_key(client_socket):
-        size = int.from_bytes(client_socket.recv(4), "big")
-        public_key = client_socket.recv(size).decode()
-        return public_key
+    def send_my_public_key(self, client_socket):
+        action = "%" * (16 - len(ServerVariables.PUBLIC_KEY_ACTION.value))
+        print(self.chat_server.public_key)
+        client_socket.send(int(len(self.chat_server.public_key)).to_bytes(4, "big") + self.chat_server.public_key
+                           + action.encode())
 
-    @staticmethod
-    def send_shared_aes_key(client_socket):
-        pass
+    def get_shared_key(self, client_socket):
+        size = int.from_bytes(client_socket.recv(4), "big")
+        shared_key = client_socket.recv(size)
+        private_key = rsa.PrivateKey.load_pkcs1(self.chat_server.private_key)
+        shared_key = Encryption.rsa_decryption(private_key, shared_key)
+        return shared_key
